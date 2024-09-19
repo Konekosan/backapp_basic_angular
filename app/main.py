@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.view.usager_api import usager_router
+from app.app_config.database import Base
+from app.app_config.database import engine
 
 app = FastAPI()
 
@@ -18,6 +21,10 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
+Base.metadata.create_all(bind=engine)
+
 @app.get("/")
 def index():
     return {"main": "Helloworld"}
+
+app.include_router(usager_router, prefix='/usager', tags=['usager'])
