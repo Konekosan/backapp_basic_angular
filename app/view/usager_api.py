@@ -22,3 +22,15 @@ async def get(db:Session=Depends(get_db)):
 async def create(request: RequestUser, db:Session=Depends(get_db)):
     _user = usager_repository.add_user(db, request.parameter)
     return _user, 200
+
+# Get usager by id
+@usager_router.get("/{id}")
+async def get_by_id(id: int, db:Session=Depends(get_db)):
+    _user = usager_repository.fetch_user_by_id(db, id)
+    return _user, 200
+
+# Delete usager by id
+@usager_router.delete("/{id}")
+def delete(id: int, db:Session=Depends(get_db)):
+    usager_repository.remove_user(db, id)
+    return 200

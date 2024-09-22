@@ -9,6 +9,9 @@ from app.app_config.config import (
 )
 from app.model.token import  TokenEnum, TokenData
 from jose import  jwt
+from sqlalchemy.orm import Session
+from app.model.usager import Usager
+from app.app_config.database_config import get_db
 
 auth_router = APIRouter()
 
@@ -21,6 +24,17 @@ def create_access_token(data: dict):
     expire = datetime.now() + timedelta(minutes=int(JWT_ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update(
         {"exp": int(expire.timestamp()), "token_data": TokenEnum.AccessToken.value}
+    )
+
+    return jwt.encode(to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
+
+# Creation du token de refresh
+def create_refresh_token(data: dict):
+    to_encode = data.copy()
+
+    expire = datetime.now() + timedelta(minutes=int(JWT_REFRESH_TOKEN_EXPIRE_MINUTES))
+    to_encode.update(
+        {"exp": int(expire.timestamp()), "token_data": TokenEnum.RefreshToken.value}
     )
 
     return jwt.encode(to_encode, JWT_SECRET_KEY, JWT_ALGORITHM)
@@ -40,3 +54,15 @@ def verify_token(token: str, credentials_exception):
         raise credentials_exception
 
     return token_data
+
+# Return current usager with token
+def get_current_usager(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    token = verify_token(token, credentials_exception)
+    user = db.query(Usager).filter(Usager.id == token.id).first()
+
+    return user

@@ -44,3 +44,17 @@ def add_user(db:Session, user: UsagerSchema):
             detail="Erreur lors de l'ajout",
         )
     return _user
+
+# Create user by id
+def remove_user(db:Session, user: UsagerSchema):
+    _user = fetch_user_by_id(db, user)
+
+    try:
+        db.delete(_user)
+        _print('Utilisateur supprimé avec succès ! ')
+        db.commit()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Erreur lors de la supression",
+        )
