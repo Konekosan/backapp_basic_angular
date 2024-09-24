@@ -33,4 +33,5 @@ async def get_by_id(id: int, db:Session=Depends(get_db)):
 @usager_router.delete("/{id}")
 def delete(id: int, db:Session=Depends(get_db)):
     usager_repository.remove_user(db, id)
-    return 200
+    message = f'Usager {id} supprimé avec succès'
+    return message, 200

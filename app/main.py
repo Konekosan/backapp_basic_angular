@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.view.usager_api import usager_router
 from app.view.login_api import login_router
+from app.view.admin_api import admin_router
 from app.app_config.database import Base
 from app.app_config.database import engine
 
@@ -30,3 +31,4 @@ def index():
 
 app.include_router(usager_router, prefix='/usager', tags=['usager'])
 app.include_router(login_router, prefix='/login', tags=['login'])
+app.include_router(admin_router, prefix='/admin', tags=['admin'])
