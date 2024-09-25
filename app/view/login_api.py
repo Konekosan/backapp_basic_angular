@@ -10,6 +10,9 @@ from app.controller import usager_repository
 from app.auth.auth import create_access_token, create_refresh_token, get_current_usager
 from app.model.usager import Usager
 from app.schema.usager_schema import UsagerSchema
+from app.schema.auth_schema import TokenData, RefreshTokenRequestSchema, RefreshTokenResponseSchema
+from app.auth.auth import verify_token
+from app.model.token import TokenEnum
 
 login_router = APIRouter()
 
@@ -38,3 +41,15 @@ async def get_me(user: Usager = Depends(get_current_usager), db: Session = Depen
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials."
         )
     return user
+
+@login_router.post("/refresh-token")
+def refresh_token(payload: RefreshTokenRequestSchema, db: Session = Depends(get_db)):
+    credentials_exception = HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid Token")
+    token_data: TokenData = verify_token(payload.refresh_token, credentials_exception)
+
+    if token_data.token_data != TokenEnum.RefreshToken:
+        raise credentials_exception
+
+    access_token = create_access_token(data={"usager_id": token_data.id})
+
+    return RefreshTokenResponseSchema(access_token=access_token, token_type="bearer")

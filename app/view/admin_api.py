@@ -6,6 +6,8 @@ from app.schema.role_schema import RequestRole
 from app.schema.permission_schema import RequestPermission
 from app.schema.role_usager_schema import RequestRoleUsager
 from app.schema.role_permission_schema import RequestRolePermission
+from app.model.usager import Usager
+from app.auth.auth import get_current_usager
 
 admin_router = APIRouter()
 
@@ -42,3 +44,12 @@ async def assign_role_to_user(request: RequestRoleUsager, db: Session = Depends(
 async def assign_permission_to_role(request: RequestRolePermission, db: Session = Depends(get_db)):
     _permissions = admin_repository.assign_permission_to_role(db, request.parameter)
     return _permissions, 200
+
+@admin_router.get("/me/permissions")
+async def get_my_permissions(user: Usager = Depends(get_current_usager), db: Session = Depends(get_db)):
+    if not user or (user.id is None):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials."
+        )
+    permissions = admin_repository.get_user_permissions(user.id, db)
+    return {"permissions": permissions}

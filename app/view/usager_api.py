@@ -8,12 +8,13 @@ from sqlalchemy.orm import Session
 from app.app_config.database_config import get_db
 from app.schema.usager_schema import RequestUser
 from app.controller import usager_repository
+from app.auth.auth import get_current_usager
 
 usager_router = APIRouter()
 
 # Fetch all usagers
 @usager_router.get("/")
-async def get(db:Session=Depends(get_db)):
+async def get(db:Session=Depends(get_db), current_user: str = Depends(get_current_usager)):
     _user = usager_repository.get_users(db, 0, 100)
     return _user, 200
 
