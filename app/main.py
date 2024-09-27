@@ -1,5 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from app.view.usager_api import usager_router
 from app.view.login_api import login_router
 from app.view.admin_api import admin_router
@@ -22,6 +23,14 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "Accept"]
 )
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print(f"Erreur inattendue: {exc}")
+    return JSONResponse(
+        status_code=500,
+        content={"message": "Erreur serveur interne. Veuillez réessayer plus tard."},
+    )
 
 Base.metadata.create_all(bind=engine)
 

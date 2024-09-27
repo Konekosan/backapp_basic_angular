@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from app.schema.auth_schema import (
     LoginResponseSchema
@@ -9,6 +9,7 @@ from app.app_config.database_config import get_db
 from app.schema.usager_schema import RequestUser
 from app.controller import usager_repository
 from app.auth.auth import get_current_usager
+from fastapi.responses import JSONResponse
 
 usager_router = APIRouter()
 
@@ -16,7 +17,7 @@ usager_router = APIRouter()
 @usager_router.get("/")
 async def get(db:Session=Depends(get_db), current_user: str = Depends(get_current_usager)):
     _user = usager_repository.get_users(db, 0, 100)
-    return _user, 200
+    return {"users": _user}
 
 # Creation d'un usager
 @usager_router.post("/create")

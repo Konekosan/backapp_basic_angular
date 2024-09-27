@@ -44,6 +44,7 @@ async def get_me(user: Usager = Depends(get_current_usager), db: Session = Depen
 
 @login_router.post("/refresh-token")
 def refresh_token(payload: RefreshTokenRequestSchema, db: Session = Depends(get_db)):
+    print('ca recoit lappel')
     credentials_exception = HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid Token")
     token_data: TokenData = verify_token(payload.refresh_token, credentials_exception)
 
