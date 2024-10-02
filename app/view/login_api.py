@@ -23,7 +23,8 @@ async def login(payload: Annotated[OAuth2PasswordRequestForm, Depends()], db: Se
 
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials."
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail={"error": "Identifiants incorrects.", "code": "invalid_credentials", "help": "Vérifiez vos identifiants."}
         )
     
     access_token = create_access_token(data={"usager_id": user.id})
@@ -38,14 +39,16 @@ async def login(payload: Annotated[OAuth2PasswordRequestForm, Depends()], db: Se
 async def get_me(user: Usager = Depends(get_current_usager), db: Session = Depends(get_db)) -> UsagerSchema:
     if not user or (user.id is None):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials."
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={"error": "Identifiants incorrects.", "code": "invalid_credentials", "help": "Vérifiez vos identifiants."}
         )
     return user
 
 @login_router.post("/refresh-token")
 def refresh_token(payload: RefreshTokenRequestSchema, db: Session = Depends(get_db)):
-    print('ca recoit lappel')
+
     credentials_exception = HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid Token")
+
     token_data: TokenData = verify_token(payload.refresh_token, credentials_exception)
 
     if token_data.token_data != TokenEnum.RefreshToken:

@@ -41,19 +41,18 @@ def create_refresh_token(data: dict):
 
 # Vérification du token
 def verify_token(token: str, credentials_exception):
-    payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=JWT_ALGORITHM)
     try:
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=JWT_ALGORITHM)
         id = payload.get("usager_id")
+
         if id is None:
             raise credentials_exception
 
         token_data = TokenData(id=str(id), **payload)
-
     except jwt.ExpiredSignatureError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Le token a expiré",
+            detail={"error": "Le jeton a expiré.", "code": "token_expired", "help": "Vérifiez rafraichir le token."},
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -68,7 +67,6 @@ def verify_token(token: str, credentials_exception):
 
 # Return current usager with token
 def get_current_usager(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    # print('intercept')
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
